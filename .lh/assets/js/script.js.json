@@ -1,0 +1,46 @@
+{
+    "sourceFile": "assets/js/script.js",
+    "activeCommit": 0,
+    "commits": [
+        {
+            "activePatchIndex": 7,
+            "patches": [
+                {
+                    "date": 1637714135765,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n"
+                },
+                {
+                    "date": 1637715095454,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -44,12 +44,17 @@\n   localStorage.setItem(\"tasks\", JSON.stringify(tasks));\n };\n \n $(\".list-group\").on(\"click\", \"p\", function() {\n-  console.log(this);\n+  var text = $(this)\n+    .text()\n+    .trim();\n+  var textInput = $(\"<textarea>\")\n+    .addClass(\"form-control\")\n+    .val(text);\n+  $(this).replaceWith(textInput);\n });\n \n-\n // modal was triggered\n $(\"#task-form-modal\").on(\"show.bs.modal\", function() {\n   // clear values\n   $(\"#modalTaskDescription, #modalDueDate\").val(\"\");\n"
+                },
+                {
+                    "date": 1637715604691,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -51,10 +51,29 @@\n   var textInput = $(\"<textarea>\")\n     .addClass(\"form-control\")\n     .val(text);\n   $(this).replaceWith(textInput);\n+  textInput.trigger(\"focus\");\n });\n \n+$(\".list-group\").on(\"blur\", \"textarea\", function() {\n+// get the textarea's current value/text\n+var text = $(this)\n+  .val()\n+  .trim();\n+\n+// get the parent ul's id attribute\n+var status = $(this)\n+  .closest(\".list-group\")\n+  .attr(\"id\")\n+  .replace(\"list-\", \"\");\n+\n+// get the task's position in the list of other li elements\n+var index = $(this)\n+  .closest(\".list-group-item\")\n+  .index();\n+});\n+\n // modal was triggered\n $(\"#task-form-modal\").on(\"show.bs.modal\", function() {\n   // clear values\n   $(\"#modalTaskDescription, #modalDueDate\").val(\"\");\n"
+                },
+                {
+                    "date": 1637715969932,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -70,8 +70,11 @@\n // get the task's position in the list of other li elements\n var index = $(this)\n   .closest(\".list-group-item\")\n   .index();\n+\n+  tasks[status][index].text = text;\n+  saveTasks();\n });\n \n // modal was triggered\n $(\"#task-form-modal\").on(\"show.bs.modal\", function() {\n"
+                },
+                {
+                    "date": 1637716108923,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,6 @@\n var tasks = {};\n-\n+debugger;\n var createTask = function(taskText, taskDate, taskList) {\n   // create elements that make up a task item\n   var taskLi = $(\"<li>\").addClass(\"list-group-item\");\n   var taskSpan = $(\"<span>\")\n"
+                },
+                {
+                    "date": 1637716289434,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -55,8 +55,9 @@\n   textInput.trigger(\"focus\");\n });\n \n $(\".list-group\").on(\"blur\", \"textarea\", function() {\n+  debugger;\n // get the textarea's current value/text\n var text = $(this)\n   .val()\n   .trim();\n"
+                },
+                {
+                    "date": 1637716389066,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -1,6 +1,5 @@\n var tasks = {};\n-debugger;\n var createTask = function(taskText, taskDate, taskList) {\n   // create elements that make up a task item\n   var taskLi = $(\"<li>\").addClass(\"list-group-item\");\n   var taskSpan = $(\"<span>\")\n@@ -55,9 +54,8 @@\n   textInput.trigger(\"focus\");\n });\n \n $(\".list-group\").on(\"blur\", \"textarea\", function() {\n-  debugger;\n // get the textarea's current value/text\n var text = $(this)\n   .val()\n   .trim();\n"
+                },
+                {
+                    "date": 1637716474332,
+                    "content": "Index: \n===================================================================\n--- \n+++ \n@@ -72,8 +72,16 @@\n   .index();\n \n   tasks[status][index].text = text;\n   saveTasks();\n+\n+  // recreate p element\n+var taskP = $(\"<p>\")\n+.addClass(\"m-1\")\n+.text(text);\n+\n+// replace textarea with p element\n+$(this).replaceWith(taskP);\n });\n \n // modal was triggered\n $(\"#task-form-modal\").on(\"show.bs.modal\", function() {\n"
+                }
+            ],
+            "date": 1637714135765,
+            "name": "Commit-0",
+            "content": "var tasks = {};\n\nvar createTask = function(taskText, taskDate, taskList) {\n  // create elements that make up a task item\n  var taskLi = $(\"<li>\").addClass(\"list-group-item\");\n  var taskSpan = $(\"<span>\")\n    .addClass(\"badge badge-primary badge-pill\")\n    .text(taskDate);\n  var taskP = $(\"<p>\")\n    .addClass(\"m-1\")\n    .text(taskText);\n\n  // append span and p element to parent li\n  taskLi.append(taskSpan, taskP);\n\n\n  // append to ul list on the page\n  $(\"#list-\" + taskList).append(taskLi);\n};\n\nvar loadTasks = function() {\n  tasks = JSON.parse(localStorage.getItem(\"tasks\"));\n\n  // if nothing in localStorage, create a new object to track all task status arrays\n  if (!tasks) {\n    tasks = {\n      toDo: [],\n      inProgress: [],\n      inReview: [],\n      done: []\n    };\n  }\n\n  // loop over object properties\n  $.each(tasks, function(list, arr) {\n        // then loop over sub-array\n    arr.forEach(function(task) {\n      createTask(task.text, task.date, list);\n    });\n  });\n};\n\nvar saveTasks = function() {\n  localStorage.setItem(\"tasks\", JSON.stringify(tasks));\n};\n\n$(\".list-group\").on(\"click\", \"p\", function() {\n  console.log(this);\n});\n\n\n// modal was triggered\n$(\"#task-form-modal\").on(\"show.bs.modal\", function() {\n  // clear values\n  $(\"#modalTaskDescription, #modalDueDate\").val(\"\");\n});\n\n// modal is fully visible\n$(\"#task-form-modal\").on(\"shown.bs.modal\", function() {\n  // highlight textarea\n  $(\"#modalTaskDescription\").trigger(\"focus\");\n});\n\n// save button in modal was clicked\n$(\"#task-form-modal .btn-primary\").click(function() {\n  // get form values\n  var taskText = $(\"#modalTaskDescription\").val();\n  var taskDate = $(\"#modalDueDate\").val();\n\n  if (taskText && taskDate) {\n    createTask(taskText, taskDate, \"toDo\");\n\n    // close modal\n    $(\"#task-form-modal\").modal(\"hide\");\n\n    // save in tasks array\n    tasks.toDo.push({\n      text: taskText,\n      date: taskDate\n    });\n\n    saveTasks();\n  }\n});\n\n// remove all tasks\n$(\"#remove-tasks\").on(\"click\", function() {\n  for (var key in tasks) {\n    tasks[key].length = 0;\n    $(\"#list-\" + key).empty();\n  }\n  saveTasks();\n});\n\n// load tasks for the first time\nloadTasks();\n\n\n"
+        }
+    ]
+}
